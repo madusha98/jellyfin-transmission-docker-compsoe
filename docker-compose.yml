@@ -1,0 +1,71 @@
+version: "3"
+
+services:
+
+  nginx:
+    image: jonasal/nginx-certbot:latest
+    restart: unless-stopped
+    environment:
+      - CERTBOT_EMAIL=youremail@email.com
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - filebrowser
+      - jellyfin
+      - transmission
+    volumes:
+      - nginx_secrets:/etc/letsencrypt
+      - ./reverse_proxy:/etc/nginx/user_conf.d
+
+  filebrowser:
+    image: hurlenko/filebrowser
+    container_name: filebrowser
+    volumes:
+      - ./downloads:/data
+      - ./filebrowser_config:/config
+    environment:
+      - FB_BASEURL=/filebrowser
+    restart: always
+    ports:
+      - 8081:8080
+
+  jellyfin:
+    image: ghcr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ./jellyfin_config:/config
+      - ./downloads:/data
+
+    devices:
+      - /dev/dri/card0:/dev/dri/card0
+
+    ports:
+      - 8096:8096
+    restart: unless-stopped
+
+  transmission:
+    image: ghcr.io/linuxserver/transmission
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - USER=madusha #optional
+      - PASS=sirisenaponnaya #optional
+    volumes:
+      - ./transmission_config:/config
+      - ./downloads:/downloads
+      - ./watch:/watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+
+volumes:
+  nginx_secrets:
