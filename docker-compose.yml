@@ -55,8 +55,8 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/London
-      - USER=madusha #optional
-      - PASS=sirisenaponnaya #optional
+      - USER=user #optional
+      - PASS=12345 #optional
     volumes:
       - ./transmission_config:/config
       - ./downloads:/downloads
